@@ -6,6 +6,7 @@ export default function App() {
   const [result, setResult] = useState("");
   const [target, setTarget] = useState("en");
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState([]);
 
   const detectLanguage = (str) => {
     const japaneseRegex = /[\u3040-\u30ff\u4e00-\u9faf]/;
@@ -26,7 +27,19 @@ export default function App() {
     try {
       const res = await fetch(url);
       const data = await res.json();
-      setResult(data.responseData.translatedText);
+
+      const translatedText = data.responseData.translatedText;
+      setResult(translatedText);
+
+      // 🔽 翻訳履歴を追加
+      setHistory((prev) => [
+        {
+          original: text,
+          translated: translatedText,
+          target: target,
+        },
+        ...prev,
+      ]);
     } catch {
       setResult("翻訳に失敗しました。");
     }
@@ -68,9 +81,27 @@ export default function App() {
         </button>
 
         <h2 className="result-heading">結果</h2>
-
         <div className="result-area">
           {result || "（翻訳結果がここに出ます）"}
+        </div>
+
+        {/* 🔽 翻訳履歴表示 */}
+        <h2 className="history-heading">翻訳履歴</h2>
+        <div className="history-area">
+          {history.length === 0 ? (
+            <p className="history-empty">（履歴はまだありません）</p>
+          ) : (
+            history.map((item, index) => (
+              <div key={index} className="history-item">
+                <div className="history-original">
+                  <strong>原文：</strong>{item.original}
+                </div>
+                <div className="history-translated">
+                  <strong>翻訳：</strong>{item.translated}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
